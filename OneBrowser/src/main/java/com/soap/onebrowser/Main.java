@@ -35,6 +35,21 @@ public class Main {
         }
 
     }
+	
+	private static void killChromeDriver() throws IOException, InterruptedException {
+		Main main = new Main();
+		
+		InputStream stream = main.getFileFromResourceAsStream("Batch/KillChromeDriver.bat");
+		File batchFile = new File(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath() + "/KillChromeDriver.bat");
+		batchFile.deleteOnExit();
+		
+		Files.write(stream.readAllBytes(), batchFile);
+		System.out.println(batchFile.getAbsolutePath());
+		Process p = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
+		p.waitFor();
+		
+		
+	}
 
 	public static boolean isStringWebsite(String s) {
 		try {
@@ -88,7 +103,9 @@ public class Main {
 		
 		handles = driver.getWindowHandles().toArray();
 		driver.switchTo().window((String) handles[1]);
+		while(handles.length == 1) {handles = driver.getWindowHandles().toArray();}
 		driver.close();
+		driver.switchTo().window((String) handles[0]);
 		while (true) {
 			handles = driver.getWindowHandles().toArray();
 			
@@ -110,10 +127,18 @@ public class Main {
 				driver.getTitle();
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				driver.quit();
+				System.out.println("Quit");
+				try {
+				killChromeDriver();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
 				return;
 			}
 		}
+		
 
 	}
 
